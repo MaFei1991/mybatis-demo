@@ -16,11 +16,11 @@ import java.util.*;
  * V1 版本总结：
  * 1. 通过类加载器  this.getClass().getClassLoader().getResourceAsStream("db.properties") 读取配置文件并给数据库连接池BasicDataSource() 赋值
  * 2. 反射，通过反射的方式获取 javabean 字段属性 以及 通过 getMetaData 获取表结构
- *    反射的方式： Class.forName(类全路径)
- *               对象.getClass()
- *                .newInstance() 实例化一个类
- *
- *
+ * 反射的方式： Class.forName(类全路径)
+ * 对象.getClass()
+ * 类名.class
+ * .newInstance() 实例化一个类
+ * 3. 泛型---> 泛型声明 泛型类型
  */
 public class MybatisV1 {
     private static BasicDataSource dataSource = null;
@@ -30,7 +30,7 @@ public class MybatisV1 {
 
     @Before
     public void initDataSource() {
-         loadProperties("jdbc.properties");
+        loadProperties("jdbc.properties");
 
         if (dataSource == null) {
             dataSource = new BasicDataSource();
@@ -90,7 +90,7 @@ public class MybatisV1 {
                 result = clazz.newInstance();
                 // getMetaData: 获取表结构
                 ResultSetMetaData metaData = resultSet.getMetaData();
-                int columnCount =  metaData.getColumnCount();
+                int columnCount = metaData.getColumnCount();
                 for (int i = 1; i <= columnCount; i++) {
                     // 取出resultset中的每一行结果中的列的名称
                     String columnName = metaData.getColumnName(i);
