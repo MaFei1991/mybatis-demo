@@ -11,6 +11,17 @@ import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.*;
 
+
+/**
+ * V1 版本总结：
+ * 1. 通过类加载器  this.getClass().getClassLoader().getResourceAsStream("db.properties") 读取配置文件并给数据库连接池BasicDataSource() 赋值
+ * 2. 反射，通过反射的方式获取 javabean 字段属性 以及 通过 getMetaData 获取表结构
+ *    反射的方式： Class.forName(类全路径)
+ *               对象.getClass()
+ *                .newInstance() 实例化一个类
+ *
+ *
+ */
 public class MybatisV1 {
     private static BasicDataSource dataSource = null;
 
@@ -19,7 +30,8 @@ public class MybatisV1 {
 
     @Before
     public void initDataSource() {
-        loadProperties("jdbc.properties");
+         loadProperties("jdbc.properties");
+
         if (dataSource == null) {
             dataSource = new BasicDataSource();
             assert properties != null;
