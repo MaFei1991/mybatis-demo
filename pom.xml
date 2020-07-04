@@ -36,6 +36,14 @@
             <version>1.4</version>
         </dependency>
 
+        <!--         dom4j依赖-->
+        <dependency>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+
+
     </dependencies>
 
 
