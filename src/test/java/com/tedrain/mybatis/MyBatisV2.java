@@ -10,6 +10,8 @@ import com.tedrain.mybatis.framework.sqlnode.iface.SqlNode;
 import com.tedrain.mybatis.framework.sqlsource.DynamicSqlSource;
 import com.tedrain.mybatis.framework.sqlsource.RawSqlSource;
 import com.tedrain.mybatis.framework.sqlsource.iface.SqlSource;
+import com.tedrain.mybatis.framework.sqlsource.model.BoundSql;
+import com.tedrain.mybatis.framework.sqlsource.model.ParameterMapping;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.dom4j.*;
 import org.dom4j.io.SAXReader;
@@ -53,7 +55,8 @@ public class MyBatisV2 {
         Map param = new HashMap();
         param.put("username", "admin");
         param.put("sex", "男");
-        selectList("getList", param);
+       // selectList("test.getList", param);
+        selectList("test.queryUserByParams", param);
     }
 
     private <T> List<T> selectList(String statementId, Object param) {
@@ -66,13 +69,14 @@ public class MyBatisV2 {
 
             // 1.获取连接
             connection = getConnection();
-            // TODO 2.获取SQL语句(SqlSource和SqlNode的执行过程)
-            String sql = getSql();
+            // 2.获取SQL语句(SqlSource和SqlNode的执行过程) n
+            BoundSql boundSql = getSql(mappedStatement, param);
+            String sql = boundSql.getSql();
             // 3.创建Statement对象
             statement = createStatement(connection, sql, mappedStatement);
 
-            // TODO 4.设置参数
-            setParameters(statement, param);
+            // 4.设置参数
+            setParameters(statement, param, boundSql);
 
             // 5.执行Statement
             resultSet = handleStatement(statement);
@@ -81,7 +85,7 @@ public class MyBatisV2 {
             handleResultSet(resultSet, results, mappedStatement);
             return results;
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage() + e.getStackTrace().toString());
         }
 
         return null;
@@ -136,14 +140,33 @@ public class MyBatisV2 {
      *
      * @param statement
      * @param param
+     * @param boundSql
      */
-    private void setParameters(Statement statement, Object param) throws SQLException {
+    private void setParameters(Statement statement, Object param, BoundSql boundSql) throws SQLException {
         if (statement instanceof PreparedStatement) {
             PreparedStatement preparedStatement = (PreparedStatement) statement;
             if (param instanceof Integer || param instanceof String) {
                 preparedStatement.setObject(1, param);
             } else if (param instanceof Map) {
-                // TODO
+                // 结合#{}的处理逻辑进行改造
+                Map paramMap = (Map) param;
+                List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
+                for (int i = 0; i < parameterMappings.size(); i++) {
+                    ParameterMapping parameterMapping = parameterMappings.get(i);
+                    String name = parameterMapping.getName();
+                    // 获取到的参数
+                    Object value = paramMap.get(name);
+                    Class type = parameterMapping.getType();
+                    if (type != null) {
+                        //TODO
+                        // preparedStatement.setInt(i+1, value);
+                        // preparedStatement.setString(i+1, value);
+                    } else {
+                        preparedStatement.setObject(i + 1, value);
+                    }
+
+                }
+
             } else {
                 // TODO
             }
@@ -180,10 +203,14 @@ public class MyBatisV2 {
     /**
      * 获取 sql 语句
      *
+     * @param mappedStatement
+     * @param param
      * @return
      */
-    private String getSql() {
-        return null;
+    private BoundSql getSql(MappedStatement mappedStatement, Object param) {
+        SqlSource sqlsource = mappedStatement.getSqlsource();
+        BoundSql boundSql = sqlsource.getBoundSql(param);
+        return boundSql;
     }
 
     /**
@@ -195,8 +222,8 @@ public class MyBatisV2 {
         DataSource dataSource = configuration.getDataSource();
         try {
             return dataSource.getConnection();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -247,8 +274,8 @@ public class MyBatisV2 {
     }
 
     private void parseMapper(Element rootElement) {
-        String namespace = rootElement.attributeValue("namespace");
-        // 获取动态 sql 标签 // TODO
+        namespace = rootElement.attributeValue("namespace");
+        // 获取动态 sql 标签
         List<Element> selectElements = rootElement.elements("select");
         for (Element selectElement : selectElements) {
             parseStatementElement(selectElement);
@@ -294,10 +321,10 @@ public class MyBatisV2 {
     }
 
     private SqlSource parseScriptNode(Element selectElement) {
+        SqlSource sqlSource;
         // 解析动态标签
         SqlNode mixedSqlNode = parseDynamicTags(selectElement);
 
-        SqlSource sqlSource;
         // 如果带有 ${} 或 动态sql标签
         if (isDynamic) {
             sqlSource = new DynamicSqlSource(mixedSqlNode);

@@ -1,15 +1,9 @@
-package com.tedrain.mybatis.framework.sqlnode;
+package com.tedrain.mybatis.sqlnode;
 
-import com.tedrain.mybatis.framework.sqlnode.iface.SqlNode;
+import com.tedrain.mybatis.sqlnode.iface.SqlNode;
 
-/**
- * 封装不带有 ${} 的sql信息
- */
 public class StaticTextSqlNode implements SqlNode {
-
-    /**
-     * 封装未解析的 sql 文本信息
-     */
+    // 封装未解析的sql文本信息
     private String sqlText;
 
     public StaticTextSqlNode(String sqlText) {

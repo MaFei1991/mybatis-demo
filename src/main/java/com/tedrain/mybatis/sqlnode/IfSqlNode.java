@@ -1,21 +1,13 @@
-package com.tedrain.mybatis.framework.sqlnode;
+package com.tedrain.mybatis.sqlnode;
 
-import com.tedrain.mybatis.framework.sqlnode.iface.SqlNode;
-import com.tedrain.mybatis.framework.utils.OgnlUtils;
+import com.tedrain.mybatis.sqlnode.iface.SqlNode;
+import com.tedrain.mybatis.utils.OgnlUtils;
 
-/**
- * 封装<if /> 标签的sql信息
- */
 public class IfSqlNode implements SqlNode {
-
-    /**
-     * <if test=""></if> test 属性
-     */
+    // if标签的test属性(获取OGNL表达式)
     private String test;
 
-    /**
-     * <if/> 的子标签
-     */
+    // if标签的子标签集合
     private SqlNode rootSqlNode;
 
     public IfSqlNode(String test, SqlNode rootSqlNode) {
@@ -26,7 +18,8 @@ public class IfSqlNode implements SqlNode {
     public void apply(DynamicContext context) {
         Object parameter = context.getBindings().get("_parameter");
         boolean evaluateBoolean = OgnlUtils.evaluateBoolean(test, parameter);
-        if (evaluateBoolean) {
+        if (evaluateBoolean){
+            // 递归去解析子节点
             rootSqlNode.apply(context);
         }
     }

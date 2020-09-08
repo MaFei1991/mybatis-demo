@@ -1,12 +1,28 @@
 <mapper namespace="test">
 
     <!-- 这就是一个 MappedStatement对象 -->
-    <select id="getList" resultType="com.tedrain.mybatis.po.User" statementType="prepared">
-        SELECT * FROM `user`
-        <if test="username != null and username != '' ">
-            where username LIKE '%${username}'
-            <if test="sex != null and sex !='' ">
-                AND sex=#{sex}
+<!--    <select id="getList" resultType="com.tedrain.mybatis.po.User" statementType="prepared">-->
+<!--        SELECT * FROM `user`-->
+<!--        <if test="username != null and username != '' ">-->
+<!--            where username LIKE '%${username}'-->
+<!--            <if test="sex != null and sex !='' ">-->
+<!--                AND sex=#{sex}-->
+<!--            </if>-->
+<!--        </if>-->
+<!--    </select>-->
+
+    <select id="queryUserByParams"
+            resultType="com.tedrain.mybatis.po.User"
+            statementType="prepared">
+
+        SELECT * FROM user WHERE sex = #{sex} AND username like '%${username}'
+        <!-- SELECT * FROM user WHERE id = #{id} AND username like '%${username}' -->
+
+        <!-- and sex = #{sex} AND username like '%${username}' -->
+        <if test="username != null and username !='' ">
+            AND username like '%${username}'
+            <if test="username != null and username !=''">
+                AND 1=1
             </if>
         </if>
     </select>
